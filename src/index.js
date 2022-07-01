@@ -1,53 +1,38 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./index.css";
 import App from "./App";
-import Home from './pages/home';
-import Exams from './routes/exams';
-import Exam from './routes/exam';
-import Quizes from './routes/quizes';
-import Quiz from './routes/quiz';
-import reportWebVitals from "./reportWebVitals";
+import Home from "./components/home";
+import Login from "./routes/login";
+import Register from "./routes/register";
+import Exams from "./routes/exams";
+import Exam from "./routes/exam";
+import ProtectedRoute from "./routes/protectedroute";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />}>
-            <Route
-              index
-              element={<Home />}
-            />
-          <Route path="exam" element={<Exams />}>
-            <Route
-              index
-              element={
-                <main style={{ padding: "1rem" }}>
-                  <p>Select an Exam</p>
-                </main>
-              }
-            />
-            <Route path=":examId" element={<Exam />} />
-          </Route>
-          <Route path="quiz" element={<Quizes />} />
-            <Route path=":quizId" element={<Quiz />} />
-          </Route>
-          <Route
-            path="*"
-            element={
-              <main style={{ padding: "1rem" }}>
-                <p>There's nothing here!</p>
-              </main>
-            }
-          />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>
-);
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<App />}>
+        <Route index element={<Home />} />
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+        <Route path="register" element={<Register />} />
+        <Route path="login" element={<Login />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="exam" element={<Exams />} />
+          <Route path="exam/:examId" element={<Exam />} />
+        </Route>
+
+        <Route
+          path="*"
+          element={
+            <main style={{ padding: "1rem" }}>
+              <p>There's nothing here!</p>
+            </main>
+          }
+        />
+      </Route>
+    </Routes>
+  </BrowserRouter>
+);

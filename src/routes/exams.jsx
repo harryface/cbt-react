@@ -1,53 +1,74 @@
-import { Outlet, useSearchParams } from "react-router-dom";
-import { getExams } from "../data";
-import { QueryNavLink } from "../helpers/querynavlink";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
+import SiteService from "../services/site";
+import Body from "../components/body";
+import eventBus from "../services/common/eventbus";
 
 export default function Exams() {
-  let exams = getExams();
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [exams, setExams] = useState([]);
+
+  useEffect(() => {
+    retrieveExams();
+  }, []);
+
+  const retrieveExams = () => {
+    SiteService.getExams()
+      .then((response) => {
+        setExams(response.data);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          // eventBus.dispatch("logout");
+          console.log("unautorised")
+        }
+        Swal.fire({
+          icon: "error",
+          title: "Something is wrong",
+          text: "Please Try Back Later",
+        });
+      });
+  };
 
   return (
-    <div style={{ display: "flex" }}>
-      <nav
-        style={{
-          borderRight: "solid 1px",
-          padding: "1rem",
-        }}
-      >
-        <input
-          value={searchParams.get("filter") || ""}
-          onChange={(event) => {
-            let filter = event.target.value;
-            if (filter) {
-              setSearchParams({ filter });
-            } else {
-              setSearchParams({});
-            }
-          }}
-        />
+    <Body>
+      <div className="columns is-multiline is-variable">
+        {exams.length ? (exams.map((exam) => (
+          <div key={ exam.id } className="column is-4">
+            <article className="panel is-info">
+              <p className="panel-heading">{exam.title}</p>
+              <div className="panel-block is-active">
+                <p>
+                  {" "}
+                  <strong>Duration: </strong> {exam.duration}{" "}
+                </p>
+              </div>
+              <div className="panel-block is-active">
+                <p>
+                  {" "}
+                  <strong>Instructions: </strong> {exam.instructions}{" "}
+                </p>
+              </div>
+              <div className="panel-block is-active">
+                <p>
+                  {" "}
+                  <strong>Questions: </strong> {exam.questions.length}{" "}
+                </p>
+              </div>
+              <div className="panel-block">
+                <Link
+                  className="button is-link is-outlined is-fullwidth"
+                  to={`/exam/${exam.id}`}
+                  key={exam.id}
+                >
+                  Start Exam
+                </Link>
+              </div>
+            </article>
+          </div>
+        ))) : <p>No exams for you</p>}
+      </div>
 
-        {exams
-          .filter((exam) => {
-            let filter = searchParams.get("filter");
-            if (!filter) return true;
-            let name = exam.name.toLowerCase();
-            return name.startsWith(filter.toLowerCase());
-          })
-          .map((exam) => (
-            <QueryNavLink
-              style={({ isActive }) => ({
-                display: "block",
-                margin: "1rem 0",
-                color: isActive ? "red" : "",
-              })}
-              to={`/exams/${exam.number}`}
-              key={exam.number}
-            >
-              {exam.name}
-            </QueryNavLink>
-          ))}
-      </nav>
-      <Outlet />
-    </div>
+    </Body>
   );
 }
